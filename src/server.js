@@ -1,28 +1,19 @@
-import express from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-
-import { handler } from '../build/handler.js';
-
+const express = require('express');
 const app = express();
+const port = 3000;
 
-const config = {
-	POCKETBASE_URL: process.env.PUBLIC_POCKETBASE_URL || 'http://pocketbase',
-	PORT: process.env.PORT || 5137,
-	INTERNAL_PATH: '/internal/pb'
-};
+// Middleware para parsear JSON
+app.use(express.json());
 
-app.use(
-	config.INTERNAL_PATH,
-	createProxyMiddleware({
-		target: config.POCKETBASE_URL,
-		changeOrigin: true,
-		ws: true,
-		pathRewrite: (path) => path.replace(config.INTERNAL_PATH, '')
-	})
-);
+// Ruta de prueba
+app.get('/', (req, res) => {
+  res.send('Hola desde el servidor Express!');
+});
 
-app.use(handler);
+// Configuración para las rutas de la API de Grimoire
+const grimoireRoutes = require('./routes/grimoire');
+app.use('/api/grimoire', grimoireRoutes);
 
-app.listen(process.env.PORT || 5137, () => {
-	console.log(`Server is running on http://localhost:${config.PORT}`);
+app.listen(port, () => {
+  console.log(`Servidor corriendo en http://localhost:${port}`);
 });
